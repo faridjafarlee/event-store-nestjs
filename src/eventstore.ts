@@ -113,7 +113,7 @@ export class EventStore {
           // snapshot.data; // Snapshot
           resolve(
             stream.events.map(event =>
-              this.getStorableEventFromPayload(event.payload),
+              this.getStorableEventFromPayload(event.payload, event.streamRevision),
             ),
           );
         },
@@ -124,6 +124,7 @@ export class EventStore {
   public async getFromSnapshot(
     aggregate: string,
     id: string,
+    revMax: number,
   ): Promise<{ snapshot: SnapshotRecord, history: StorableEvent[]}> {
     // TODO: Fix getEvents for Oracle, not implemented
     // if (this.oracleEventstore) {
@@ -136,7 +137,7 @@ export class EventStore {
         (err, snapshot, stream) => {
           // snapshot.data; // Snapshot
           const history = stream.events.map(event =>
-            this.getStorableEventFromPayload(event.payload),
+            this.getStorableEventFromPayload(event.payload, event.streamRevision),
           );
           // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
           // @ts-ignore
@@ -180,7 +181,7 @@ export class EventStore {
     return new Promise<StorableEvent>((resolve, reject) => {
       this.eventstore.getEvents(index, 1, (err, events) => {
         if (events.length > 0) {
-          resolve(this.getStorableEventFromPayload(events[0].payload));
+          resolve(this.getStorableEventFromPayload(events[0].payload, events[0].streamRevision));
         } else {
           resolve(null);
         }
@@ -222,12 +223,13 @@ export class EventStore {
   }
 
   // Monkey patch to obtain event 'instances' from db
-  private getStorableEventFromPayload(payload: any): StorableEvent {
+  private getStorableEventFromPayload(payload: any, revision?: number): StorableEvent {
     if (this.oracleEventstore) {
       this.eventstore.getStorableEventFromPayload(payload);
     }
 
     const eventPlain = payload;
+    if (revision) eventPlain.revision = revision;
     eventPlain.constructor = { name: eventPlain.eventName };
 
     return Object.assign(Object.create(eventPlain), eventPlain);
