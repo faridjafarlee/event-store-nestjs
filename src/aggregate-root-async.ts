@@ -1,14 +1,9 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable @typescript-eslint/no-empty-function */
-// import { AggregateRoot } from '@nestjs/cqrs';
 import { IEvent } from '@nestjs/cqrs/dist/interfaces';
 
 const INTERNAL_EVENTS = Symbol();
 const IS_AUTO_COMMIT_ENABLED = Symbol();
 
-// export abstract class AggregateRootAsync<EventBase extends IEvent = IEvent> {
 export abstract class AggregateRootAsync<EventBase extends IEvent = IEvent> {
-// export abstract class AggregateRootAsync<EventBase extends IEvent = IEvent> extends AggregateRoot {
   public [IS_AUTO_COMMIT_ENABLED] = false;
   private readonly [INTERNAL_EVENTS]: EventBase[] = [];
 
@@ -30,7 +25,7 @@ export abstract class AggregateRootAsync<EventBase extends IEvent = IEvent> {
   }
 
   async commitAsync(): Promise<void> {
-    const publishPromises= this[INTERNAL_EVENTS].map((event) => this.publishAsync(event));
+    const publishPromises = this[INTERNAL_EVENTS].map((event) => this.publishAsync(event));
     await Promise.all(publishPromises);
     this[INTERNAL_EVENTS].length = 0;
   }
@@ -44,6 +39,11 @@ export abstract class AggregateRootAsync<EventBase extends IEvent = IEvent> {
   }
 
   loadFromHistory(history: EventBase[]) {
+    history.forEach((event) => this.apply(event, true));
+  }
+
+  loadFromSnapshot({ snapshot, history }) {
+    Object.assign(this, snapshot.data);
     history.forEach((event) => this.apply(event, true));
   }
 
