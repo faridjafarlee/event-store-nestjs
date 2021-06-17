@@ -5,6 +5,7 @@ import { OracleEventStore, SnapshotRecord } from './oracle';
 import * as eventstore from 'eventstore';
 import * as url from 'url';
 import { OracleConfig } from './interfaces/oracle';
+import shortUuid from "short-uuid";
 
 export class EventStore {
   private readonly eventstore;
@@ -148,8 +149,20 @@ export class EventStore {
   public async createSnapshot(
     aggregate: string,
     id: string,
-    snapshot: SnapshotRecord,
+    data: Record<string, any> | null,
+    revision?: number,
+    version?: number,
   ) {
+    const snapshot: SnapshotRecord = {
+      snapshotId: shortUuid.generate(),
+      aggregateId: this.getAggregateId(aggregate, id),
+      aggregate: aggregate,
+      // context?: string,
+      revision: revision,
+      version: version,
+      commitStamp: new Date(),
+      data,
+    };
     return new Promise(resolve => {
       this.eventstore.createSnapshot(snapshot, (err) => {
         if (err) console.error(err);
