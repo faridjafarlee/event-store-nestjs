@@ -5,7 +5,7 @@ export abstract class StorableEvent implements IEvent {
     abstract eventAggregate: string;
     abstract eventVersion: number;
     eventName: string;
-    revision: number;
+    revision?: number;
 
     constructor() {
         this.eventName = this.constructor.name;
