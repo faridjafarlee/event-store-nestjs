@@ -124,7 +124,6 @@ export class EventStore {
   public async getFromSnapshot(
     aggregate: string,
     id: string,
-    revMax: number,
   ): Promise<{ snapshot: SnapshotRecord, history: StorableEvent[]}> {
     // TODO: Fix getEvents for Oracle, not implemented
     // if (this.oracleEventstore) {
@@ -135,7 +134,6 @@ export class EventStore {
       this.eventstore.getFromSnapshot(
         this.getAggregateId(aggregate, id),
         (err, snapshot, stream) => {
-          // snapshot.data; // Snapshot
           const history = stream.events.map(event =>
             this.getStorableEventFromPayload(event.payload, event.streamRevision),
           );
