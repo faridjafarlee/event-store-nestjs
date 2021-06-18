@@ -55,6 +55,7 @@ export abstract class AggregateRootAsync<EventBase extends IEvent = IEvent> {
 
     const handler = this.getEventHandler(event);
     handler && handler.call(this, event);
+    return this;
   }
 
   private getEventHandler<T extends EventBase = EventBase>(
