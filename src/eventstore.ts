@@ -165,7 +165,6 @@ export class EventStore {
     return new Promise(resolve => {
       this.eventstore.createSnapshot(snapshot, (err) => {
         if (err) console.error(err);
-        console.log('Snapshot has been successfully created.');
         resolve();
       })
     });
